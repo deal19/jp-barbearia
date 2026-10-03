@@ -117,4 +117,4 @@ sb.channel('jp-queue').on('postgres_changes',{event:'*',schema:'public',table:'q
 setInterval(()=>{loadPublic();if(session&&document.getElementById('dashboard').classList.contains('active'))loadAdmin()},15000);setInterval(()=>{const t=$('serviceTimer');if(t&&session&&document.getElementById('dashboard').classList.contains('active')){const cur=queue.find(x=>x.status==='in_service');if(cur)t.textContent=clock(elapsed(cur.service_started_at))}},1000);
 </script>
 </body></html>
-<!-- deploy-sync 2026-10-03 • ajuste de proporcoes do topo -->
+<!-- deploy-sync 2026-10-03 • ajuste final de proporcoes do topo -->
