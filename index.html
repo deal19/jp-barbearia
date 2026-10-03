@@ -35,7 +35,7 @@
     </div>
   </section>
   <section id="dashboard" class="view">
-    <div id="loginCard" class="card"><h2 style="margin-top:0">Acesso do JP</h2><p class="muted">Área administrativa. Entre com o usuário criado no Supabase Auth.</p><form id="loginForm" class="form"><input class="input" id="email" type="email" placeholder="E-mail" required><input class="input" id="password" type="password" placeholder="Senha" required><button class="btn">Entrar</button></form></div>
+    <div id="loginCard" class="card"><h2 style="margin-top:0">Acesso do JP</h2><p class="muted">Área administrativa.</p><form id="loginForm" class="form"><input class="input" id="password" type="password" placeholder="Senha do painel" required><button class="btn">Entrar</button></form></div>
     <div id="admin" class="hidden">
       <div class="grid4">
         <div class="card"><div class="label">Na fila</div><div id="aWaiting" class="num">0</div></div>
@@ -73,10 +73,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
 async function start(id){await sb.from('queue_entries').update({status:'in_service',called_at:new Date().toISOString(),service_started_at:new Date().toISOString()}).eq('id',id);toast('Atendimento iniciado.');loadAdmin()}
 async function finish(id){const x=queue.find(e=>e.id===id);const amount=x?.final_amount??x?.price_at_sale;await sb.from('queue_entries').update({status:'completed',finished_at:new Date().toISOString(),final_amount:amount,payment_status:'paid',payment_method:'pix',paid_at:new Date().toISOString()}).eq('id',id);toast('Atendimento finalizado.');loadAdmin()}
 async function skip(id){await sb.from('queue_entries').update({status:'skipped',finished_at:new Date().toISOString()}).eq('id',id);toast('Vez passada.');loadAdmin()}
-$('loginForm').onsubmit=async e=>{e.preventDefault();const {data,error}=await sb.auth.signInWithPassword({email:$('email').value,password:$('password').value});if(error){toast('E-mail ou senha inválidos.');return}session=data.session;toast('Acesso liberado.');loadAdmin()};
-$('logout').onclick=async()=>{await sb.auth.signOut();session=null;loadAdmin()};
+$('loginForm').onsubmit=e=>{e.preventDefault();if($('password').value==='12345'){session={panel:true};sessionStorage.setItem('jp_panel','1');$('password').value='';toast('Acesso liberado.');loadAdmin()}else{toast('Senha incorreta.')}};
+$('logout').onclick=()=>{session=null;sessionStorage.removeItem('jp_panel');loadAdmin()};
 $('refresh').onclick=()=>{loadPublic();if(document.getElementById('dashboard').classList.contains('active'))loadAdmin()};
-sb.auth.getSession().then(r=>{session=r.data.session;loadServices();loadPublic();if(session)loadAdmin()});
+session=sessionStorage.getItem('jp_panel')==='1'?{panel:true}:null;
+loadServices();loadPublic();if(session)loadAdmin();
 sb.channel('jp-queue').on('postgres_changes',{event:'*',schema:'public',table:'queue_entries'},()=>{loadPublic();if(session)loadAdmin()}).subscribe();
 setInterval(()=>{loadPublic();if(session&&document.getElementById('dashboard').classList.contains('active'))loadAdmin()},15000);
 </script>
