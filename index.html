@@ -85,7 +85,7 @@ document.querySelectorAll('.pay-btn').forEach(b=>b.addEventListener('click',()=>
 $('discountInput').addEventListener('input',updatePaymentTotal);$('cashReceived').addEventListener('input',updatePaymentTotal);
 $('cancelPayment').onclick=()=>{$('paymentModal').classList.add('hidden');paymentEntry=null};
 $('confirmPayment').onclick=async()=>{if(!paymentEntry)return;if(!paymentMethod){toast('Escolha a forma de pagamento.');return}const discount=Math.max(0,Number($('discountInput').value||0));const id=paymentEntry.id;const {data,error}=await sb.rpc('panel_finish_queue',{p_id:id,p_payment_method:paymentMethod,p_discount:discount});if(error||!data){console.error(error);toast('Não foi possível finalizar.');return}$('paymentModal').classList.add('hidden');paymentEntry=null;toast('Atendimento finalizado e recebido registrado.');await loadAdmin()};
-async function skip(id){const {error}=await sb.from('queue_entries').update({status:'skipped',finished_at:new Date().toISOString()}).eq('id',id);if(error){toast('Não foi possível passar a vez.');return}toast('Vez passada.');loadAdmin()}
+async function skip(id){const {data,error}=await sb.rpc('panel_skip_queue',{p_id:id});if(error||!data){console.error(error);toast('Não foi possível passar a vez.');return}toast('Vez passada.');await loadAdmin()}
 $('loginForm').onsubmit=e=>{e.preventDefault();if($('password').value==='12345'){session={panel:true};sessionStorage.setItem('jp_panel','1');$('password').value='';toast('Acesso liberado.');loadAdmin()}else{toast('Senha incorreta.')}};
 $('logout').onclick=()=>{session=null;sessionStorage.removeItem('jp_panel');loadAdmin()};
 $('refresh').onclick=()=>{loadPublic();if(document.getElementById('dashboard').classList.contains('active'))loadAdmin()};
