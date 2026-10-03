@@ -74,7 +74,7 @@ function renderAdmin(){const cur=queue.find(x=>x.status==='in_service');const ca
 document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;const id=b.dataset.id;if(b.dataset.action==='call')call(id);if(b.dataset.action==='begin')begin(id);if(b.dataset.action==='finish')finish(id);if(b.dataset.action==='skip')skip(id)});
 async function call(id){const {data,error}=await sb.rpc('panel_call_queue',{p_id:id});if(error||!data){toast('Não foi possível chamar.');return}toast('Cliente chamado.');loadAdmin()}
 async function begin(id){const {data,error}=await sb.rpc('panel_begin_queue',{p_id:id});if(error||!data){toast('Não foi possível iniciar.');return}toast('Atendimento iniciado.');loadAdmin()}
-async function finish(id){const x=queue.find(e=>e.id===id);const amount=x?.final_amount??x?.price_at_sale;await sb.from('queue_entries').update({status:'completed',finished_at:new Date().toISOString(),final_amount:amount}).eq('id',id);toast('Atendimento finalizado.');loadAdmin()}
+async function finish(id){const {data,error}=await sb.rpc('panel_finish_queue',{p_id:id});if(error||!data){toast('Não foi possível finalizar.');return}toast('Atendimento finalizado.');await loadAdmin()}
 async function skip(id){const {error}=await sb.from('queue_entries').update({status:'skipped',finished_at:new Date().toISOString()}).eq('id',id);if(error){toast('Não foi possível passar a vez.');return}toast('Vez passada.');loadAdmin()}
 $('loginForm').onsubmit=e=>{e.preventDefault();if($('password').value==='12345'){session={panel:true};sessionStorage.setItem('jp_panel','1');$('password').value='';toast('Acesso liberado.');loadAdmin()}else{toast('Senha incorreta.')}};
 $('logout').onclick=()=>{session=null;sessionStorage.removeItem('jp_panel');loadAdmin()};
@@ -85,4 +85,4 @@ sb.channel('jp-queue').on('postgres_changes',{event:'*',schema:'public',table:'q
 setInterval(()=>{loadPublic();if(session&&document.getElementById('dashboard').classList.contains('active'))loadAdmin()},15000);setInterval(()=>{const t=$('serviceTimer');if(t&&session&&document.getElementById('dashboard').classList.contains('active')){const cur=queue.find(x=>x.status==='in_service');if(cur)t.textContent=clock(elapsed(cur.service_started_at))}},1000);
 </script>
 </body></html>
-<!-- deploy-sync 2026-10-03 • atendimento v2 -->
+<!-- deploy-sync 2026-10-03 • atendimento v3 -->
